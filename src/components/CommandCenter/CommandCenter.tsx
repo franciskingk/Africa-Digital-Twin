@@ -7,7 +7,7 @@ import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 
 export default function CommandCenter() {
-  const { viewMode } = useAppStore();
+  const { viewMode, systemMetrics, simulationEvents } = useAppStore();
   const { weatherData, newsData, economicData } = useDataLayers();
   const [time, setTime] = useState('');
 
@@ -29,6 +29,14 @@ export default function CommandCenter() {
         </div>
         <div className="flex items-center gap-6 font-mono text-sm text-sky-200/60">
           <div className="flex items-center gap-2">
+            <span className="text-slate-400">EVENTS/SEC:</span>
+            <span className="text-sky-400 font-bold">{systemMetrics.events_per_sec || 0}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-slate-400">ACTIVE NODES:</span>
+            <span className="text-sky-400 font-bold">{systemMetrics.active_nodes || 0}</span>
+          </div>
+          <div className="flex items-center gap-2">
             <Clock size={16} />
             <span>{time} UTC</span>
           </div>
@@ -41,10 +49,37 @@ export default function CommandCenter() {
 
       <div className="flex-1 grid grid-cols-12 grid-rows-6 gap-6">
         {/* Main Display - left side */}
-        <div className="col-span-8 row-span-6 glass-panel rounded-2xl relative overflow-hidden flex flex-col items-center justify-center border-sky-500/20">
+        <div className="col-span-8 row-span-6 glass-panel rounded-2xl relative overflow-hidden flex flex-col p-6 border-sky-500/20">
           <div className="scanline" />
-          <h2 className="text-sky-500/20 font-heading text-4xl uppercase tracking-[0.5em] font-bold z-10">Main Display Feed Active</h2>
-          <p className="text-sky-500/40 font-mono mt-4 z-10">Select a region to engage detailed analytics</p>
+          <h2 className="text-sky-500/40 font-heading text-lg uppercase tracking-[0.2em] font-bold z-10 border-b border-sky-500/20 pb-2 mb-4">Simulation & Event Stream</h2>
+          
+          <div className="flex-1 overflow-y-auto flex flex-col gap-4 z-10 custom-scrollbar pr-2">
+            {simulationEvents.length > 0 ? (
+              simulationEvents.map((evt, i) => (
+                <div key={i} className={clsx(
+                  "p-4 rounded-xl border bg-slate-900/60 backdrop-blur flex flex-col gap-2 transition-all",
+                  evt.severity === 'CRITICAL' ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' :
+                  evt.severity === 'HIGH' ? 'border-orange-500/50' : 'border-sky-500/30'
+                )}>
+                  <div className="flex justify-between items-center text-xs font-mono">
+                    <span className={clsx(
+                      "px-2 py-1 rounded",
+                      evt.severity === 'CRITICAL' ? 'bg-red-500/20 text-red-400' :
+                      evt.severity === 'HIGH' ? 'bg-orange-500/20 text-orange-400' : 'bg-sky-500/20 text-sky-400'
+                    )}>{evt.category.toUpperCase()} // {evt.severity}</span>
+                    <span className="text-slate-500">LAT: {evt.lat.toFixed(3)} LNG: {evt.lng.toFixed(3)}</span>
+                  </div>
+                  <p className="text-sm text-slate-200 mt-1">{evt.effect}</p>
+                </div>
+              ))
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-sky-500/20">
+                <ShieldAlert size={48} className="mb-4 opacity-50" />
+                <h3 className="font-heading text-2xl uppercase tracking-[0.5em] font-bold">Awaiting Input</h3>
+                <p className="font-mono mt-2">Use Copilot to initiate scenario simulations</p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right side panels */}

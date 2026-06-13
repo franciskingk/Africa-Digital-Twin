@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Bot, Send, Sparkles, X, ChevronRight } from 'lucide-react';
 import clsx from 'clsx';
 import { useAppStore } from '@/stores/appStore';
+import { useDataLayers } from '@/hooks/useDataLayers';
 
 export default function CopilotPanel() {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,6 +13,7 @@ export default function CopilotPanel() {
     { role: 'ai', content: 'System initialized. How can I assist with your intelligence operations today?' }
   ]);
   const { setViewMode, toggleLayer, activeLayers } = useAppStore();
+  const { sendCommand } = useDataLayers();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -30,7 +32,7 @@ export default function CopilotPanel() {
     const currentQuery = query.toLowerCase();
     setQuery('');
     
-    // Simulate AI response based on keywords for prototype
+    // Process query locally or send to backend
     setTimeout(() => {
       let response = "I've analyzed the latest telemetry. No significant anomalies detected in that sector.";
       
@@ -46,6 +48,14 @@ export default function CopilotPanel() {
       } else if (currentQuery.includes('command') || currentQuery.includes('dashboard')) {
         response = "Switching to Command Center mode for multi-spectrum analysis.";
         setViewMode('command_center');
+      } else if (currentQuery.includes('simulat') || currentQuery.includes('what if') || currentQuery.includes('drop')) {
+        response = "Initiating predictive simulation based on your parameters. Routing feed to Command Center Main Display...";
+        setViewMode('command_center');
+        sendCommand({
+          action: "run_simulation",
+          scenario: currentQuery,
+          params: { region: "Horn of Africa" }
+        });
       }
 
       setMessages(prev => [...prev, { role: 'ai', content: response }]);

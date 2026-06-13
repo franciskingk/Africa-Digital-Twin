@@ -8,7 +8,7 @@ import { useAppStore } from '@/stores/appStore';
 export default function AfricaGlobe() {
   const globeRef = useRef<any>();
   const [globeReady, setGlobeReady] = useState(false);
-  const { activeLayers } = useAppStore();
+  const { activeLayers, simulationEvents } = useAppStore();
   const { weatherData, newsData, flightsData } = useDataLayers();
 
   useEffect(() => {
@@ -53,6 +53,17 @@ export default function AfricaGlobe() {
     }));
   }, [activeLayers.news, newsData]);
 
+  const ringsData = useMemo(() => {
+    return simulationEvents.map((evt: any) => ({
+      lat: evt.lat,
+      lng: evt.lng,
+      maxR: evt.severity === 'CRITICAL' ? 5 : 3,
+      propagationSpeed: evt.severity === 'CRITICAL' ? 2 : 1,
+      repeatPeriod: 800,
+      color: evt.severity === 'CRITICAL' ? '#ef4444' : '#f59e0b'
+    }));
+  }, [simulationEvents]);
+
   return (
     <div className="absolute inset-0 cursor-move">
       {typeof window !== 'undefined' && (
@@ -86,6 +97,12 @@ export default function AfricaGlobe() {
           pointAltitude={0.05}
           pointRadius="size"
           pointLabel="name"
+
+          ringsData={ringsData}
+          ringColor="color"
+          ringMaxRadius="maxR"
+          ringPropagationSpeed="propagationSpeed"
+          ringRepeatPeriod="repeatPeriod"
         />
       )}
     </div>
